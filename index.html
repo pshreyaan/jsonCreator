@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XML to JSON Converter - Forecast Matcher</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 0.95rem;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .input-section {
+            margin-bottom: 25px;
+        }
+
+        .input-section label {
+            display: block;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+        }
+
+        .input-section label .subtitle {
+            font-weight: normal;
+            font-size: 0.85rem;
+            color: #666;
+            margin-left: 10px;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 200px;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            resize: vertical;
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        textarea.error {
+            border-color: #e74c3c;
+        }
+
+        textarea.success {
+            border-color: #27ae60;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin: 25px 0;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 30px;
+            font-size: 1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: #7f8c8d;
+        }
+
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-success:hover:not(:disabled) {
+            background: #229954;
+        }
+
+        .btn-info {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-info:hover:not(:disabled) {
+            background: #2980b9;
+        }
+
+        .output-section {
+            margin-top: 25px;
+        }
+
+        .output-section label {
+            display: block;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+        }
+
+        #output {
+            background: #f8f9fa;
+            border: 2px solid #e0e0e0;
+            min-height: 300px;
+        }
+
+        .message {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-weight: 500;
+            display: none;
+        }
+
+        .message.show {
+            display: block;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.error {
+            background: #fadbd8;
+            color: #c0392b;
+            border: 1px solid #e74c3c;
+        }
+
+        .message.success {
+            background: #d5f4e6;
+            color: #186a3b;
+            border: 1px solid #27ae60;
+        }
+
+        .message.info {
+            background: #d6eaf8;
+            color: #1b4f72;
+            border: 1px solid #3498db;
+        }
+
+        .spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .spinner.show {
+            display: inline-block;
+        }
+
+        .stats {
+            display: flex;
+            gap: 20px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .stat-card {
+            flex: 1;
+            min-width: 200px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            font-size: 2rem;
+            margin-bottom: 5px;
+        }
+
+        .stat-card p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #7f8c8d;
+            font-size: 0.85rem;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                padding: 20px;
+            }
+
+            header h1 {
+                font-size: 1.5rem;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            button {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .stats {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔄 XML to JSON Converter</h1>
+            <p>Convert RNetDemandForecast XML files to JSON format for forecast matching</p>
+        </header>
+
+        <div class="content">
+            <div class="message" id="message"></div>
+
+            <div class="stats" id="stats" style="display: none;">
+                <div class="stat-card">
+                    <h3 id="existingCount">0</h3>
+                    <p>Existing Orders</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="forecastCount">0</h3>
+                    <p>New Forecasts</p>
+                </div>
+            </div>
+
+            <div class="input-section">
+                <label for="xmlYesterday">
+                    Input 1: Yesterday XML
+                    <span class="subtitle">(Existing Orders)</span>
+                </label>
+                <textarea id="xmlYesterday" placeholder="Paste your yesterday XML here..."></textarea>
+            </div>
+
+            <div class="input-section">
+                <label for="xmlToday">
+                    Input 2: Today XML
+                    <span class="subtitle">(New Forecasts)</span>
+                </label>
+                <textarea id="xmlToday" placeholder="Paste your today XML here..."></textarea>
+            </div>
+
+            <div class="button-group">
+                <button class="btn-primary" id="convertBtn">
+                    <span class="spinner" id="spinner"></span>
+                    <span id="convertText">🚀 Convert to JSON</span>
+                </button>
+                <button class="btn-secondary" id="clearBtn">🗑️ Clear All</button>
+            </div>
+
+            <div class="output-section">
+                <label for="output">
+                    Output JSON
+                </label>
+                <textarea id="output" readonly placeholder="Converted JSON will appear here..."></textarea>
+                <div class="button-group" style="margin-top: 15px;">
+                    <button class="btn-success" id="copyBtn" disabled>📋 Copy to Clipboard</button>
+                    <button class="btn-info" id="downloadBtn" disabled>💾 Download JSON</button>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>Built for GitHub Pages • Supports RNetDemandForecast XML format</p>
+        </footer>
+    </div>
+
+    <script>
+        // DOM Elements
+        const xmlYesterdayInput = document.getElementById('xmlYesterday');
+        const xmlTodayInput = document.getElementById('xmlToday');
+        const outputTextarea = document.getElementById('output');
+        const convertBtn = document.getElementById('convertBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const copyBtn = document.getElementById('copyBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const messageDiv = document.getElementById('message');
+        const spinner = document.getElementById('spinner');
+        const convertText = document.getElementById('convertText');
+        const statsDiv = document.getElementById('stats');
+        const existingCountEl = document.getElementById('existingCount');
+        const forecastCountEl = document.getElementById('forecastCount');
+
+        // Utility Functions
+        function showMessage(text, type = 'info') {
+            messageDiv.textContent = text;
+            messageDiv.className = `message ${type} show`;
+            setTimeout(() => {
+                messageDiv.classList.remove('show');
+            }, 5000);
+        }
+
+        function formatDate(xmlDateTime) {
+            // Convert "20260522T000000" to "2026-05-22"
+            if (!xmlDateTime) return null;
+            const dateStr = xmlDateTime.split('T')[0];
+            const year = dateStr.substring(0, 4);
+            const month = dateStr.substring(4, 6);
+            const day = dateStr.substring(6, 8);
+            return `${year}-${month}-${day}`;
+        }
+
+        function getElementText(xmlDoc, selector, defaultValue = null) {
+            const element = xmlDoc.querySelector(selector);
+            return element ? element.textContent.trim() : defaultValue;
+        }
+
+        function extractMetadata(xmlDoc) {
+            try {
+                const buyerId = getElementText(xmlDoc, 'RNetDemandForecastPartners Buyer RNetPartnerIdentifier');
+                const sellerId = getElementText(xmlDoc, 'RNetDemandForecastPartners Seller RNetPartnerIdentifier');
+                const productId = getElementText(xmlDoc, 'ForecastProduct ProductIdentification ProductIdentifier');
+                const shipToId = getElementText(xmlDoc, 'ForecastProduct ShipTo RNetPartnerIdentifier');
+
+                if (!buyerId || !sellerId || !productId || !shipToId) {
+                    throw new Error('Missing required metadata fields');
+                }
+
+                return { buyerId, sellerId, productId, shipToId };
+            } catch (error) {
+                throw new Error(`Failed to extract metadata: ${error.message}`);
+            }
+        }
+
+        function extractForecasts(xmlDoc) {
+            const forecasts = [];
+            const forecastElements = xmlDoc.querySelectorAll('Forecast');
+
+            forecastElements.forEach(forecast => {
+                try {
+                    const lineNumber = getElementText(forecast, 'LineNumber');
+                    const poNumber = getElementText(forecast, 'ReferenceInformation DocumentIdentifier');
+                    const fromDateTime = getElementText(forecast, 'FromDateTime');
+                    const deliveryDate = formatDate(fromDateTime);
+                    const quantityStr = getElementText(forecast, 'MeasurementValue', '0');
+                    const quantity = parseInt(quantityStr, 10);
+                    const uom = getElementText(forecast, 'UnitOfMeasureCode');
+
+                    if (lineNumber && deliveryDate !== null) {
+                        forecasts.push({
+                            poNumber: poNumber,
+                            lineNumber: lineNumber,
+                            releaseNumber: null,
+                            deliveryDate: deliveryDate,
+                            quantity: quantity,
+                            uom: uom
+                        });
+                    }
+                } catch (error) {
+                    console.warn('Failed to parse forecast entry:', error);
+                }
+            });
+
+            return forecasts;
+        }
+
+        function validateXML(xmlString) {
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(xmlString, 'text/xml');
+            
+            // Check for parser errors
+            const parserError = xmlDoc.querySelector('parsererror');
+            if (parserError) {
+                throw new Error('Invalid XML format');
+            }
+
+            return xmlDoc;
+        }
+
+        function convertToJSON() {
+            try {
+                // Clear previous states
+                xmlYesterdayInput.classList.remove('error', 'success');
+                xmlTodayInput.classList.remove('error', 'success');
+                outputTextarea.value = '';
+                copyBtn.disabled = true;
+                downloadBtn.disabled = true;
+                statsDiv.style.display = 'none';
+
+                // Get input values
+                const xmlYesterdayStr = xmlYesterdayInput.value.trim();
+                const xmlTodayStr = xmlTodayInput.value.trim();
+
+                // Validate inputs
+                if (!xmlYesterdayStr || !xmlTodayStr) {
+                    throw new Error('Please provide both XML inputs');
+                }
+
+                // Show loading state
+                spinner.classList.add('show');
+                convertText.textContent = 'Converting...';
+                convertBtn.disabled = true;
+
+                // Parse XML
+                const xmlYesterday = validateXML(xmlYesterdayStr);
+                const xmlToday = validateXML(xmlTodayStr);
+
+                // Extract metadata from both
+                const yesterdayMeta = extractMetadata(xmlYesterday);
+                const todayMeta = extractMetadata(xmlToday);
+
+                // Validate metadata matches
+                if (yesterdayMeta.buyerId !== todayMeta.buyerId) {
+                    throw new Error(`Buyer ID mismatch: Yesterday (${yesterdayMeta.buyerId}) vs Today (${todayMeta.buyerId})`);
+                }
+                if (yesterdayMeta.sellerId !== todayMeta.sellerId) {
+                    throw new Error(`Seller ID mismatch: Yesterday (${yesterdayMeta.sellerId}) vs Today (${todayMeta.sellerId})`);
+                }
+                if (yesterdayMeta.productId !== todayMeta.productId) {
+                    throw new Error(`Product ID mismatch: Yesterday (${yesterdayMeta.productId}) vs Today (${todayMeta.productId})`);
+                }
+                if (yesterdayMeta.shipToId !== todayMeta.shipToId) {
+                    throw new Error(`Ship-To ID mismatch: Yesterday (${yesterdayMeta.shipToId}) vs Today (${todayMeta.shipToId})`);
+                }
+
+                // Extract forecasts
+                const existingOrders = extractForecasts(xmlYesterday);
+                const forecasts = extractForecasts(xmlToday);
+
+                if (existingOrders.length === 0 && forecasts.length === 0) {
+                    throw new Error('No forecast entries found in either XML');
+                }
+
+                // Build final JSON
+                const result = {
+                    metadata: {
+                        buyerId: todayMeta.buyerId,
+                        sellerId: todayMeta.sellerId,
+                        productId: todayMeta.productId,
+                        shipToId: todayMeta.shipToId,
+                        orderCancellationAllowed: true
+                    },
+                    forecasts: forecasts,
+                    existingOrders: existingOrders
+                };
+
+                // Display result
+                const jsonOutput = JSON.stringify(result, null, 2);
+                outputTextarea.value = jsonOutput;
+
+                // Update stats
+                existingCountEl.textContent = existingOrders.length;
+                forecastCountEl.textContent = forecasts.length;
+                statsDiv.style.display = 'flex';
+
+                // Update UI
+                xmlYesterdayInput.classList.add('success');
+                xmlTodayInput.classList.add('success');
+                copyBtn.disabled = false;
+                downloadBtn.disabled = false;
+
+                showMessage(`✅ Conversion successful! Found ${existingOrders.length} existing orders and ${forecasts.length} new forecasts.`, 'success');
+
+            } catch (error) {
+                xmlYesterdayInput.classList.add('error');
+                xmlTodayInput.classList.add('error');
+                showMessage(`❌ Error: ${error.message}`, 'error');
+            } finally {
+                spinner.classList.remove('show');
+                convertText.textContent = '🚀 Convert to JSON';
+                convertBtn.disabled = false;
+            }
+        }
+
+        function clearAll() {
+            xmlYesterdayInput.value = '';
+            xmlTodayInput.value = '';
+            outputTextarea.value = '';
+            xmlYesterdayInput.classList.remove('error', 'success');
+            xmlTodayInput.classList.remove('error', 'success');
+            copyBtn.disabled = true;
+            downloadBtn.disabled = true;
+            statsDiv.style.display = 'none';
+            messageDiv.classList.remove('show');
+        }
+
+        function copyToClipboard() {
+            outputTextarea.select();
+            document.execCommand('copy');
+            showMessage('📋 JSON copied to clipboard!', 'success');
+        }
+
+        function downloadJSON() {
+            const jsonContent = outputTextarea.value;
+            const blob = new Blob([jsonContent], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `forecast-conversion-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showMessage('💾 JSON file downloaded!', 'success');
+        }
+
+        // Event Listeners
+        convertBtn.addEventListener('click', convertToJSON);
+        clearBtn.addEventListener('click', clearAll);
+        copyBtn.addEventListener('click', copyToClipboard);
+        downloadBtn.addEventListener('click', downloadJSON);
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            // Ctrl/Cmd + Enter to convert
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                e.preventDefault();
+                convertToJSON();
+            }
+            // Ctrl/Cmd + K to clear
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                e.preventDefault();
+                clearAll();
+            }
+        });
+    </script>
+</body>
+</html>
