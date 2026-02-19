@@ -229,16 +229,35 @@
         }
 
         .message {
-            padding: 15px;
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 30px;
             border-radius: 8px;
-            margin: 15px 0;
             font-weight: 500;
-            display: none;
+            z-index: 1000;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s, transform 0.3s;
         }
 
         .message.show {
-            display: block;
-            animation: slideIn 0.3s ease-out;
+            opacity: 1;
+            visibility: visible;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
         }
 
         @keyframes slideIn {
@@ -422,10 +441,6 @@
                 </div>
             </div>
         </div>
-
-        <footer>
-            <p>Built for GitHub Pages • Supports RNetDemandForecast XML format</p>
-        </footer>
     </div>
 
     <script>
