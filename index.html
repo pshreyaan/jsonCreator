@@ -13,7 +13,6 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 20px;
         }
@@ -21,17 +20,19 @@
         .container {
             max-width: 1400px;
             margin: 0 auto;
-            background: white;
+            background: #f5f5f5;
             border-radius: 12px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
             overflow: hidden;
+            border: 2px solid #ffd700;
         }
 
         header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            color: #ffd700;
             padding: 30px;
             text-align: center;
+            border-bottom: 3px solid #ffd700;
         }
 
         header h1 {
@@ -55,7 +56,7 @@
         .input-section label {
             display: block;
             font-weight: 600;
-            color: #333;
+
             margin-bottom: 8px;
             font-size: 1.1rem;
         }
@@ -65,6 +66,51 @@
             font-size: 0.85rem;
             color: #666;
             margin-left: 10px;
+        }
+
+        .input-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: -9999px;
+        }
+
+        .file-input-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 20px;
+            background: #2d2d2d;
+            color: #ffd700;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.3s;
+            border: 1px solid #ffd700;
+        }
+
+        .file-input-label:hover {
+            background: #1a1a1a;
+            transform: translateY(-1px);
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+        }
+
+        .file-name {
+            font-size: 0.85rem;
+            color: #ffd700;
+            font-weight: 500;
         }
 
         textarea {
@@ -81,15 +127,16 @@
 
         textarea:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: #ffd700;
+            box-shadow: 0 0 5px rgba(255, 215, 0, 0.3);
         }
 
         textarea.error {
-            border-color: #e74c3c;
+            border-color: #ff4444;
         }
 
         textarea.success {
-            border-color: #27ae60;
+            border-color: #00ff00;
         }
 
         .button-group {
@@ -118,40 +165,49 @@
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            color: #ffd700;
+            border: 2px solid #ffd700;
         }
 
         .btn-primary:hover:not(:disabled) {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 5px 15px rgba(255, 215, 0, 0.4);
+            background: #ffd700;
+            color: #1a1a1a;
         }
 
         .btn-secondary {
-            background: #95a5a6;
-            color: white;
+            background: #3d3d3d;
+            color: #ffd700;
+            border: 2px solid #666;
         }
 
         .btn-secondary:hover:not(:disabled) {
-            background: #7f8c8d;
+            background: #2d2d2d;
+            border-color: #ffd700;
         }
 
         .btn-success {
-            background: #27ae60;
-            color: white;
+            background: #2d2d2d;
+            color: #00ff00;
+            border: 2px solid #00ff00;
         }
 
         .btn-success:hover:not(:disabled) {
-            background: #229954;
+            background: #00ff00;
+            color: #1a1a1a;
         }
 
         .btn-info {
-            background: #3498db;
-            color: white;
+            background: #2d2d2d;
+            color: #ffd700;
+            border: 2px solid #ffd700;
         }
 
         .btn-info:hover:not(:disabled) {
-            background: #2980b9;
+            background: #ffd700;
+            color: #1a1a1a;
         }
 
         .output-section {
@@ -197,21 +253,21 @@
         }
 
         .message.error {
-            background: #fadbd8;
-            color: #c0392b;
-            border: 1px solid #e74c3c;
+            background: #2d1a1a;
+            color: #ff4444;
+            border: 2px solid #ff4444;
         }
 
         .message.success {
-            background: #d5f4e6;
-            color: #186a3b;
-            border: 1px solid #27ae60;
+            background: #1a2d1a;
+            color: #00ff00;
+            border: 2px solid #00ff00;
         }
 
         .message.info {
-            background: #d6eaf8;
-            color: #1b4f72;
-            border: 1px solid #3498db;
+            background: #1a1a2d;
+            color: #ffd700;
+            border: 2px solid #ffd700;
         }
 
         .spinner {
@@ -242,11 +298,12 @@
         .stat-card {
             flex: 1;
             min-width: 200px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            color: #ffd700;
             padding: 20px;
             border-radius: 8px;
             text-align: center;
+            border: 2px solid #ffd700;
         }
 
         .stat-card h3 {
@@ -317,7 +374,16 @@
                     Input 1: Yesterday XML
                     <span class="subtitle">(Existing Orders)</span>
                 </label>
-                <textarea id="xmlYesterday" placeholder="Paste your yesterday XML here..."></textarea>
+                <div class="input-controls">
+                    <div class="file-input-wrapper">
+                        <input type="file" id="fileYesterday" accept=".xml,text/xml,application/xml" />
+                        <label for="fileYesterday" class="file-input-label">
+                            📁 Upload XML File
+                        </label>
+                    </div>
+                    <span class="file-name" id="fileNameYesterday"></span>
+                </div>
+                <textarea id="xmlYesterday" placeholder="Paste your yesterday XML here or upload a file..."></textarea>
             </div>
 
             <div class="input-section">
@@ -325,7 +391,16 @@
                     Input 2: Today XML
                     <span class="subtitle">(New Forecasts)</span>
                 </label>
-                <textarea id="xmlToday" placeholder="Paste your today XML here..."></textarea>
+                <div class="input-controls">
+                    <div class="file-input-wrapper">
+                        <input type="file" id="fileToday" accept=".xml,text/xml,application/xml" />
+                        <label for="fileToday" class="file-input-label">
+                            📁 Upload XML File
+                        </label>
+                    </div>
+                    <span class="file-name" id="fileNameToday"></span>
+                </div>
+                <textarea id="xmlToday" placeholder="Paste your today XML here or upload a file..."></textarea>
             </div>
 
             <div class="button-group">
@@ -357,6 +432,10 @@
         // DOM Elements
         const xmlYesterdayInput = document.getElementById('xmlYesterday');
         const xmlTodayInput = document.getElementById('xmlToday');
+        const fileYesterdayInput = document.getElementById('fileYesterday');
+        const fileTodayInput = document.getElementById('fileToday');
+        const fileNameYesterday = document.getElementById('fileNameYesterday');
+        const fileNameToday = document.getElementById('fileNameToday');
         const outputTextarea = document.getElementById('output');
         const convertBtn = document.getElementById('convertBtn');
         const clearBtn = document.getElementById('clearBtn');
@@ -556,10 +635,40 @@
             outputTextarea.value = '';
             xmlYesterdayInput.classList.remove('error', 'success');
             xmlTodayInput.classList.remove('error', 'success');
+            fileYesterdayInput.value = '';
+            fileTodayInput.value = '';
+            fileNameYesterday.textContent = '';
+            fileNameToday.textContent = '';
             copyBtn.disabled = true;
             downloadBtn.disabled = true;
             statsDiv.style.display = 'none';
             messageDiv.classList.remove('show');
+        }
+
+        function handleFileUpload(file, textarea, fileNameDisplay) {
+            if (!file) return;
+
+            // Validate file type
+            if (!file.name.toLowerCase().endsWith('.xml')) {
+                showMessage('❌ Please upload a valid XML file', 'error');
+                return;
+            }
+
+            // Show file name
+            fileNameDisplay.textContent = `✓ ${file.name}`;
+
+            // Read file content
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                textarea.value = e.target.result;
+                textarea.classList.remove('error', 'success');
+                showMessage(`✓ File "${file.name}" loaded successfully`, 'success');
+            };
+            reader.onerror = () => {
+                showMessage('❌ Error reading file', 'error');
+                fileNameDisplay.textContent = '';
+            };
+            reader.readAsText(file);
         }
 
         function copyToClipboard() {
@@ -587,6 +696,16 @@
         clearBtn.addEventListener('click', clearAll);
         copyBtn.addEventListener('click', copyToClipboard);
         downloadBtn.addEventListener('click', downloadJSON);
+        // File upload listeners
+        fileYesterdayInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            handleFileUpload(file, xmlYesterdayInput, fileNameYesterday);
+        });
+
+        fileTodayInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            handleFileUpload(file, xmlTodayInput, fileNameToday);
+        });
 
         // Keyboard shortcuts
         document.addEventListener('keydown', (e) => {
