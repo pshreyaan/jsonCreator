@@ -473,9 +473,10 @@
         }
 
         function formatDate(xmlDateTime) {
-            // Convert "20260522T000000" to "2026-05-22"
+            // Convert "20260522T000000" or "20260522" to "2026-05-22"
             if (!xmlDateTime) return null;
             const dateStr = xmlDateTime.split('T')[0];
+            // Handle both 8-digit (YYYYMMDD) and longer formats
             const year = dateStr.substring(0, 4);
             const month = dateStr.substring(4, 6);
             const day = dateStr.substring(6, 8);
@@ -489,10 +490,23 @@
 
         function extractMetadata(xmlDoc) {
             try {
-                const buyerId = getElementText(xmlDoc, 'RNetDemandForecastPartners Buyer RNetPartnerIdentifier');
-                const sellerId = getElementText(xmlDoc, 'RNetDemandForecastPartners Seller RNetPartnerIdentifier');
-                const productId = getElementText(xmlDoc, 'ForecastProduct ProductIdentification ProductIdentifier');
-                const shipToId = getElementText(xmlDoc, 'ForecastProduct ShipTo RNetPartnerIdentifier');
+                // Try RNet format first, then fall back to DemandForecast format
+                let buyerId = getElementText(xmlDoc, 'RNetDemandForecastPartners Buyer RNetPartnerIdentifier');
+                if (!buyerId) {
+                    buyerId = getElementText(xmlDoc, 'DemandForecastPartners Buyer PartnerIdentifier');
+                }
+
+                let sellerId = getElementText(xmlDoc, 'RNetDemandForecastPartners Seller RNetPartnerIdentifier');
+                if (!sellerId) {
+                    sellerId = getElementText(xmlDoc, 'DemandForecastPartners Seller PartnerIdentifier');
+                }
+
+                let productId = getElementText(xmlDoc, 'ForecastProduct ProductIdentification ProductIdentifier');
+
+                let shipToId = getElementText(xmlDoc, 'ForecastProduct ShipTo RNetPartnerIdentifier');
+                if (!shipToId) {
+                    shipToId = getElementText(xmlDoc, 'ForecastProduct ShipTo PartnerIdentifier');
+                }
 
                 if (!buyerId || !sellerId || !productId || !shipToId) {
                     throw new Error('Missing required metadata fields');
@@ -506,32 +520,101 @@
 
         function extractForecasts(xmlDoc) {
             const forecasts = [];
-            const forecastElements = xmlDoc.querySelectorAll('Forecast');
+            const forecastLineItems = xmlDoc.querySelectorAll('ForecastLineItem');
 
-            forecastElements.forEach(forecast => {
-                try {
-                    const lineNumber = getElementText(forecast, 'LineNumber');
-                    const poNumber = getElementText(forecast, 'ReferenceInformation DocumentIdentifier');
-                    const fromDateTime = getElementText(forecast, 'FromDateTime');
-                    const deliveryDate = formatDate(fromDateTime);
-                    const quantityStr = getElementText(forecast, 'MeasurementValue', '0');
-                    const quantity = parseInt(quantityStr, 10);
-                    const uom = getElementText(forecast, 'UnitOfMeasureCode');
+            forecastLineItems.forEach(lineItem => {
+                // Get LineNumber from ForecastLineItem level
+                const lineNumber = getElementText(lineItem, 'LineNumber');
+                const forecastElements = lineItem.querySelectorAll('Forecast');
 
-                    if (lineNumber && deliveryDate !== null) {
-                        forecasts.push({
-                            poNumber: poNumber,
-                            lineNumber: lineNumber,
-                            releaseNumber: null,
-                            deliveryDate: deliveryDate,
-                            quantity: quantity,
-                            uom: uom
-                        });
+                forecastElements.forEach(forecast => {
+                    try {
+                        // Try RNet format first, then DemandForecast format for PO number
+                        let poNumber = getElementText(forecast, 'ReferenceInformation DocumentIdentifier');
+                        if (!poNumber) {
+                            // DemandForecast format: get PurchaseOrderNumber from ReferenceNumber
+                            const refNumbers = forecast.querySelectorAll('ReferenceNumber');
+                            refNumbers.forEach(ref => {
+                                if (ref.getAttribute('ReferenceNumberType') === 'PurchaseOrderNumber') {
+                                    poNumber = ref.textContent.trim();
+                                }
+                            });
+                        }
+
+                        // Try direct FromDateTime first, then PlanWindow > DateTimeRange > FromDateTime
+                        let fromDateTime = getElementText(forecast, 'FromDateTime');
+                        if (!fromDateTime) {
+                            fromDateTime = getElementText(forecast, 'PlanWindow DateTimeRange FromDateTime');
+                        }
+                        // Also try ReferenceDate with DeliveryDateTimeRequested type
+                        if (!fromDateTime) {
+                            const refDates = forecast.querySelectorAll('ReferenceDate');
+                            refDates.forEach(ref => {
+                                if (ref.getAttribute('ReferenceDateType') === 'DeliveryDateTimeRequested') {
+                                    fromDateTime = ref.textContent.trim();
+                                }
+                            });
+                        }
+
+                        const deliveryDate = formatDate(fromDateTime);
+
+                        // Try direct MeasurementValue first, then nested path
+                        let quantityStr = getElementText(forecast, 'MeasurementValue', '0');
+                        if (quantityStr === '0') {
+                            quantityStr = getElementText(forecast, 'PlanQuantity MeasurementInformation SpecifiedMeasurement Measurement MeasurementValue', '0');
+                        }
+                        const quantity = parseInt(quantityStr, 10);
+
+                        // Try direct UnitOfMeasureCode first, then nested path
+                        let uom = getElementText(forecast, 'UnitOfMeasureCode');
+                        if (!uom) {
+                            uom = getElementText(forecast, 'PlanQuantity MeasurementInformation SpecifiedMeasurement Measurement UnitOfMeasureCode');
+                        }
+
+                        if (deliveryDate !== null) {
+                            forecasts.push({
+                                poNumber: poNumber,
+                                lineNumber: lineNumber,
+                                releaseNumber: null,
+                                deliveryDate: deliveryDate,
+                                quantity: quantity,
+                                uom: uom
+                            });
+                        }
+                    } catch (error) {
+                        console.warn('Failed to parse forecast entry:', error);
                     }
-                } catch (error) {
-                    console.warn('Failed to parse forecast entry:', error);
-                }
+                });
             });
+
+            // Fallback: if no ForecastLineItems found, try direct Forecast elements (old format)
+            if (forecasts.length === 0) {
+                const forecastElements = xmlDoc.querySelectorAll('Forecast');
+                forecastElements.forEach(forecast => {
+                    try {
+                        const lineNumber = getElementText(forecast, 'LineNumber');
+                        const poNumber = getElementText(forecast, 'ReferenceInformation DocumentIdentifier');
+                        const fromDateTime = getElementText(forecast, 'FromDateTime');
+                        const deliveryDate = formatDate(fromDateTime);
+                        const quantityStr = getElementText(forecast, 'MeasurementValue', '0');
+                        const quantity = parseInt(quantityStr, 10);
+                        const uom = getElementText(forecast, 'UnitOfMeasureCode');
+
+                        if (lineNumber && deliveryDate !== null) {
+                            forecasts.push({
+                                poNumber: poNumber,
+                                lineNumber: lineNumber,
+                                releaseNumber: null,
+                                deliveryDate: deliveryDate,
+                                quantity: quantity,
+                                uom: uom
+                            });
+                        }
+                    } catch (error) {
+                        console.warn('Failed to parse forecast entry:', error);
+                    }
+                });
+            }
 
             return forecasts;
         }
