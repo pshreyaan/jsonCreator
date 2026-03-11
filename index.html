@@ -48,9 +48,14 @@
         .content {
             padding: 30px;
         }
+        .main-input-section {
+            display: flex;
+
+        }
 
         .input-section {
             margin-bottom: 25px;
+            width: 50%;
         }
 
         .input-section label {
@@ -113,31 +118,8 @@
             font-weight: 500;
         }
 
-        textarea {
-            width: 100%;
-            min-height: 200px;
-            padding: 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-family: 'Courier New', monospace;
-            font-size: 0.9rem;
-            resize: vertical;
-            transition: border-color 0.3s;
-        }
-
-        textarea:focus {
-            outline: none;
-            border-color: #ffd700;
-            box-shadow: 0 0 5px rgba(255, 215, 0, 0.3);
-        }
-
-        textarea.error {
-            border-color: #ff4444;
-        }
-
-        textarea.success {
-            border-color: #00ff00;
-        }
+        /* textarea base styles removed — replaced by CodeMirror */
+        /* CM needs a refresh() call if initialised inside a hidden container */
 
         .button-group {
             display: flex;
@@ -210,6 +192,27 @@
             color: #1a1a1a;
         }
 
+        .btn-api {
+            background: #2d2d2d;
+            color: #00bfff;
+            border: 2px solid #00bfff;
+        }
+
+        .btn-api:hover:not(:disabled) {
+            background: #00bfff;
+            color: #1a1a1a;
+        }
+
+        .api-response-section label {
+            display: block;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+        }
+
+        /* #apiResponse and #output are replaced by CodeMirror — styled via .CodeMirror overrides above */
+
         .output-section {
             margin-top: 25px;
         }
@@ -222,12 +225,44 @@
             font-size: 1.1rem;
         }
 
-        #output {
-            background: #f8f9fa;
+        /* ── CodeMirror overrides ── */
+        .CodeMirror {
+            height: 250px;
             border: 2px solid #e0e0e0;
-            min-height: 300px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            transition: border-color 0.3s;
         }
+        .CodeMirror-scroll { box-sizing: border-box; }
+        .CodeMirror-focused {
+            border-color: #ffd700 !important;
+            box-shadow: 0 0 5px rgba(255, 215, 0, 0.3);
+        }
+        .CodeMirror.error   { border-color: #ff4444 !important; }
+        .CodeMirror.success { border-color: #00ff00 !important; }
+        .output-section .CodeMirror        { height: 350px; }
+        .api-response-section .CodeMirror  { height: 250px; border-color: #00bfff; }
+        .api-response-section .CodeMirror.error { border-color: #ff4444 !important; }
 
+        .origin-warning {
+            background: #2d1a00;
+            color: #ffaa00;
+            border: 2px solid #ffaa00;
+            border-radius: 8px;
+            padding: 12px 20px;
+            margin-bottom: 20px;
+            font-size: 0.92rem;
+            display: none;
+        }
+        .origin-warning strong { color: #ffd700; }
+        .origin-warning code {
+            background: #1a1a1a;
+            padding: 2px 7px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+        }
         .message {
             position: fixed;
             top: 20px;
@@ -364,8 +399,160 @@
             .stats {
                 flex-direction: column;
             }
+            .compare-section {
+                margin-top: 0;
+            }
+            .compare-grid {
+                grid-template-columns: 1fr;
+            }
         }
+
+        /* ── Compare Section ── */
+        .btn-compare {
+            background: #2d2d2d;
+            color: #ff8c00;
+            border: 2px solid #ff8c00;
+        }
+        .btn-compare:hover:not(:disabled) {
+            background: #ff8c00;
+            color: #1a1a1a;
+        }
+        .compare-section {
+            margin-top: 25px;
+            border: 2px solid #ff8c00;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .compare-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #1a1a1a;
+            padding: 12px 20px;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .compare-header h3 {
+            color: #ff8c00;
+            font-size: 1.1rem;
+            margin: 0;
+            white-space: nowrap;
+        }
+        .error-legend {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .legend-item {
+            font-size: 0.8rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .legend-xml-error  { color: #ff6666; }
+        .legend-mismatch   { color: #ffd700; }
+        .legend-added      { color: #56d364; }
+        .legend-removed    { color: #f85149; }
+        .error-banner {
+            padding: 12px 20px;
+            font-size: 0.92rem;
+            display: none;
+            word-break: break-word;
+        }
+        .error-banner.xml-error {
+            background: #2d0a0a;
+            color: #ff8080;
+            border-bottom: 1px solid #ff4444;
+        }
+        .error-banner.mismatch {
+            background: #2d2500;
+            color: #ffd700;
+            border-bottom: 1px solid #ffd700;
+        }
+        .compare-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+        }
+        .compare-pane {
+            overflow: hidden;
+            border-right: 1px solid #2a2a2a;
+        }
+        .compare-pane:last-child { border-right: none; }
+        .compare-pane-header {
+            background: #2d2d2d;
+            color: #ffd700;
+            padding: 8px 15px;
+            font-weight: 600;
+            font-size: 0.88rem;
+            border-bottom: 1px solid #444;
+        }
+        .compare-pane-header.pane-error {
+            background: #3a0d0d;
+            color: #ff8080;
+            border-bottom-color: #ff4444;
+        }
+        .parse-error-badge {
+            background: #ff4444;
+            color: #fff;
+            padding: 1px 7px;
+            border-radius: 4px;
+            font-size: 0.73rem;
+            margin-left: 8px;
+            vertical-align: middle;
+        }
+        .compare-content {
+            overflow-y: auto;
+            max-height: 480px;
+            background: #0d1117;
+            font-family: 'Courier New', monospace;
+            font-size: 0.82rem;
+        }
+        .diff-line {
+            display: flex;
+            align-items: stretch;
+            min-height: 22px;
+            line-height: 22px;
+        }
+        .diff-line-num {
+            min-width: 46px;
+            padding: 0 8px;
+            color: #666;
+            border-right: 1px solid #1e1e1e;
+            user-select: none;
+            text-align: right;
+            flex-shrink: 0;
+            background: #0d1117;
+            font-size: 0.76rem;
+        }
+        .diff-line-content {
+            padding: 0 10px;
+            white-space: pre;
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .diff-equal   .diff-line-content { color: #c9d1d9; }
+        .diff-equal   .diff-line-num     { background: #0d1117; }
+        .diff-changed                     { background: #2d2500; }
+        .diff-changed .diff-line-num      { background: #3d3300; color: #ffd700; }
+        .diff-changed .diff-line-content  { color: #ffd700; }
+        .diff-added                       { background: #0a2a0a; }
+        .diff-added   .diff-line-num      { background: #0d3a0d; color: #56d364; }
+        .diff-added   .diff-line-content  { color: #56d364; }
+        .diff-removed                     { background: #2a0a0a; }
+        .diff-removed .diff-line-num      { background: #3a0d0d; color: #f85149; }
+        .diff-removed .diff-line-content  { color: #f85149; }
+        .diff-placeholder                 { background: #111; }
+        .diff-placeholder .diff-line-num  { color: transparent; }
+        .diff-placeholder .diff-line-content { color: transparent; }
     </style>
+    <!-- CodeMirror — processes entirely in-browser, your XML/JSON never leaves this tab -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/xml/xml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
 </head>
 <body>
     <div class="container">
@@ -376,6 +563,10 @@
 
         <div class="content">
             <div class="message" id="message"></div>
+            <div class="origin-warning" id="originWarning">
+                ⚠️ <strong>File opened via file://</strong> — the browser will block API calls due to CORS.<br>
+                Open via your local server instead: <code>http://localhost:5500/index.html</code>
+            </div>
 
             <div class="stats" id="stats" style="display: none;">
                 <div class="stat-card">
@@ -387,8 +578,8 @@
                     <p>New Forecasts</p>
                 </div>
             </div>
-
-            <div class="input-section">
+            <div class =  "main-input-section">
+                            <div class="input-section">
                 <label for="xmlYesterday">
                     Input 1: Yesterday XML
                     <span class="subtitle">(Existing Orders)</span>
@@ -422,12 +613,38 @@
                 <textarea id="xmlToday" placeholder="Paste your today XML here or upload a file..."></textarea>
             </div>
 
+            </div>
             <div class="button-group">
                 <button class="btn-primary" id="convertBtn">
                     <span class="spinner" id="spinner"></span>
                     <span id="convertText">🚀 Convert to JSON</span>
                 </button>
                 <button class="btn-secondary" id="clearBtn">🗑️ Clear All</button>
+                <button class="btn-compare" id="compareBtn">🔍 Compare XMLs</button>
+            </div>
+
+            <div class="compare-section" id="compareSection" style="display:none;">
+                <div class="compare-header">
+                    <h3>🔍 XML Comparison</h3>
+                    <div class="error-legend">
+                        <span class="legend-item legend-xml-error">● XML Parse Error</span>
+                        <span class="legend-item legend-mismatch">● Data Mismatch</span>
+                        <span class="legend-item legend-added">● Added Line</span>
+                        <span class="legend-item legend-removed">● Removed Line</span>
+                    </div>
+                    <button class="btn-secondary" id="closeCompareBtn" style="padding:6px 14px;font-size:0.85rem;">✕ Close</button>
+                </div>
+                <div class="error-banner" id="errorBanner"></div>
+                <div class="compare-grid">
+                    <div class="compare-pane">
+                        <div class="compare-pane-header" id="compareLeftHeader">📋 Yesterday XML (Existing Orders)</div>
+                        <div class="compare-content" id="compareLeft"></div>
+                    </div>
+                    <div class="compare-pane">
+                        <div class="compare-pane-header" id="compareRightHeader">📋 Today XML (New Forecasts)</div>
+                        <div class="compare-content" id="compareRight"></div>
+                    </div>
+                </div>
             </div>
 
             <div class="output-section">
@@ -438,6 +655,15 @@
                 <div class="button-group" style="margin-top: 15px;">
                     <button class="btn-success" id="copyBtn" disabled>📋 Copy to Clipboard</button>
                     <button class="btn-info" id="downloadBtn" disabled>💾 Download JSON</button>
+                    <button class="btn-api" id="sendApiBtn" disabled>
+                        <span class="spinner" id="apiSpinner"></span>
+                        <span id="apiText">🚀 Send to API</span>
+                    </button>
+                </div>
+
+                <div class="api-response-section" id="apiResponseSection" style="display: none; margin-top: 20px;">
+                    <label>API Response</label>
+                    <textarea id="apiResponse" readonly style="min-height: 200px;"></textarea>
                 </div>
             </div>
         </div>
@@ -456,12 +682,33 @@
         const clearBtn = document.getElementById('clearBtn');
         const copyBtn = document.getElementById('copyBtn');
         const downloadBtn = document.getElementById('downloadBtn');
+        const sendApiBtn = document.getElementById('sendApiBtn');
+        const apiSpinner = document.getElementById('apiSpinner');
+        const apiText = document.getElementById('apiText');
+        const apiResponseSection = document.getElementById('apiResponseSection');
+        const apiResponseTextarea = document.getElementById('apiResponse');
         const messageDiv = document.getElementById('message');
+
+        // API Configuration
+        const API_URL = 'https://fhzktx7ajf.execute-api.eu-west-1.amazonaws.com/dev/api/v1/aimodel/forecast/infer';
         const spinner = document.getElementById('spinner');
         const convertText = document.getElementById('convertText');
         const statsDiv = document.getElementById('stats');
         const existingCountEl = document.getElementById('existingCount');
         const forecastCountEl = document.getElementById('forecastCount');
+
+        // ── CodeMirror editors — all data stays in this browser tab, zero external calls ──
+        const CM_XML_OPTS  = { mode: 'xml',                          theme: 'dracula', lineNumbers: true, lineWrapping: true };
+        const CM_JSON_OPTS = { mode: { name: 'javascript', json: true }, theme: 'dracula', lineNumbers: true, lineWrapping: true };
+        const cmYesterday   = CodeMirror.fromTextArea(xmlYesterdayInput,   CM_XML_OPTS);
+        const cmToday       = CodeMirror.fromTextArea(xmlTodayInput,       CM_XML_OPTS);
+        const cmOutput      = CodeMirror.fromTextArea(outputTextarea,      CM_JSON_OPTS);
+        const cmApiResponse = CodeMirror.fromTextArea(apiResponseTextarea, CM_JSON_OPTS);
+
+        // Detect file:// origin and warn — API calls will be CORS-blocked
+        if (window.location.protocol === 'file:') {
+            document.getElementById('originWarning').style.display = 'block';
+        }
 
         // Utility Functions
         function showMessage(text, type = 'info') {
@@ -475,11 +722,12 @@
         function formatDate(xmlDateTime) {
             // Convert "20260522T000000" or "20260522" to "2026-05-22"
             if (!xmlDateTime) return null;
-            const dateStr = xmlDateTime.split('T')[0];
-            // Handle both 8-digit (YYYYMMDD) and longer formats
-            const year = dateStr.substring(0, 4);
+            const dateStr = xmlDateTime.split('T')[0].replace(/-/g, ''); // normalise already-hyphenated dates
+            if (dateStr.length < 8) return null; // guard against malformed values
+            const year  = dateStr.substring(0, 4);
             const month = dateStr.substring(4, 6);
-            const day = dateStr.substring(6, 8);
+            const day   = dateStr.substring(6, 8);
+            if (!year || !month || !day) return null;
             return `${year}-${month}-${day}`;
         }
 
@@ -489,33 +737,61 @@
         }
 
         function extractMetadata(xmlDoc) {
-            try {
-                // Try RNet format first, then fall back to DemandForecast format
-                let buyerId = getElementText(xmlDoc, 'RNetDemandForecastPartners Buyer RNetPartnerIdentifier');
-                if (!buyerId) {
-                    buyerId = getElementText(xmlDoc, 'DemandForecastPartners Buyer PartnerIdentifier');
+            // Primary: extract from Header > From / To > PartnerIdentifier Agency="D-U-N-S"
+            let buyerId = null;
+            xmlDoc.querySelectorAll('Header From PartnerInformation PartnerIdentifier').forEach(node => {
+                if (!buyerId && node.getAttribute('Agency') === 'D-U-N-S') {
+                    buyerId = node.textContent.trim() || null;
                 }
+            });
 
-                let sellerId = getElementText(xmlDoc, 'RNetDemandForecastPartners Seller RNetPartnerIdentifier');
-                if (!sellerId) {
-                    sellerId = getElementText(xmlDoc, 'DemandForecastPartners Seller PartnerIdentifier');
+            let sellerId = null;
+            xmlDoc.querySelectorAll('Header To PartnerInformation PartnerIdentifier').forEach(node => {
+                if (!sellerId && node.getAttribute('Agency') === 'D-U-N-S') {
+                    sellerId = node.textContent.trim() || null;
                 }
+            });
 
-                let productId = getElementText(xmlDoc, 'ForecastProduct ProductIdentification ProductIdentifier');
-
-                let shipToId = getElementText(xmlDoc, 'ForecastProduct ShipTo RNetPartnerIdentifier');
-                if (!shipToId) {
-                    shipToId = getElementText(xmlDoc, 'ForecastProduct ShipTo PartnerIdentifier');
-                }
-
-                if (!buyerId || !sellerId || !productId || !shipToId) {
-                    throw new Error('Missing required metadata fields');
-                }
-
-                return { buyerId, sellerId, productId, shipToId };
-            } catch (error) {
-                throw new Error(`Failed to extract metadata: ${error.message}`);
+            // Fallback: RNet / DemandForecast partner blocks
+            if (!buyerId) {
+                buyerId = getElementText(xmlDoc, 'RNetDemandForecastPartners Buyer RNetPartnerIdentifier') ||
+                          getElementText(xmlDoc, 'DemandForecastPartners Buyer PartnerIdentifier');
             }
+            if (!sellerId) {
+                sellerId = getElementText(xmlDoc, 'RNetDemandForecastPartners Seller RNetPartnerIdentifier') ||
+                           getElementText(xmlDoc, 'DemandForecastPartners Seller PartnerIdentifier');
+            }
+
+            // Target the AssignedByBuyer ProductIdentification node specifically
+            let productId = null;
+            const productIdNodes = xmlDoc.querySelectorAll('ForecastProduct ProductIdentification');
+            productIdNodes.forEach(node => {
+                if (!productId && node.getAttribute('Agency') === 'AssignedByBuyer') {
+                    const pi = node.querySelector('ProductIdentifier');
+                    if (pi) productId = pi.textContent.trim();
+                }
+            });
+            // Fallback: first ProductIdentifier found
+            if (!productId) {
+                productId = getElementText(xmlDoc, 'ForecastProduct ProductIdentification ProductIdentifier');
+            }
+
+            let shipToId = getElementText(xmlDoc, 'ForecastProduct ShipTo RNetPartnerIdentifier');
+            if (!shipToId) {
+                shipToId = getElementText(xmlDoc, 'ForecastProduct ShipTo PartnerIdentifier');
+            }
+
+            // Report exactly which field(s) are missing
+            const missing = [];
+            if (!buyerId)   missing.push('Buyer ID (DemandForecastPartners > Buyer > PartnerIdentifier)');
+            if (!sellerId)  missing.push('Seller ID (DemandForecastPartners > Seller > PartnerIdentifier)');
+            if (!productId) missing.push('Product ID (ForecastProduct > ProductIdentification > ProductIdentifier)');
+            if (!shipToId)  missing.push('Ship-To ID (ForecastProduct > ShipTo > PartnerIdentifier)');
+            if (missing.length > 0) {
+                throw new Error(`Missing required fields: ${missing.join(' | ')}`);
+            }
+
+            return { buyerId, sellerId, productId, shipToId };
         }
 
         function extractForecasts(xmlDoc) {
@@ -533,12 +809,12 @@
                         let poNumber = getElementText(forecast, 'ReferenceInformation DocumentIdentifier');
                         if (!poNumber) {
                             // DemandForecast format: get PurchaseOrderNumber from ReferenceNumber
-                            const refNumbers = forecast.querySelectorAll('ReferenceNumber');
-                            refNumbers.forEach(ref => {
-                                if (ref.getAttribute('ReferenceNumberType') === 'PurchaseOrderNumber') {
-                                    poNumber = ref.textContent.trim();
-                                }
-                            });
+                            const refNumbers = Array.from(forecast.querySelectorAll('ReferenceNumber'));
+                            const poRef = refNumbers.find(r => r.getAttribute('ReferenceNumberType') === 'PurchaseOrderNumber');
+                            if (poRef) poNumber = poRef.textContent.trim() || null;
+                        }
+                        if (!poNumber) {
+                            console.warn('Forecast entry has no PO number — will be included with null poNumber', forecast);
                         }
 
                         // Try direct FromDateTime first, then PlanWindow > DateTimeRange > FromDateTime
@@ -573,12 +849,12 @@
 
                         if (deliveryDate !== null) {
                             forecasts.push({
-                                poNumber: poNumber,
-                                lineNumber: lineNumber,
+                                poNumber:      poNumber   || null,
+                                lineNumber:    lineNumber || null,
                                 releaseNumber: null,
-                                deliveryDate: deliveryDate,
-                                quantity: quantity,
-                                uom: uom
+                                deliveryDate:  deliveryDate,
+                                quantity:      isNaN(quantity) ? 0 : quantity,
+                                uom:           uom        || null
                             });
                         }
                     } catch (error) {
@@ -592,22 +868,22 @@
                 const forecastElements = xmlDoc.querySelectorAll('Forecast');
                 forecastElements.forEach(forecast => {
                     try {
-                        const lineNumber = getElementText(forecast, 'LineNumber');
-                        const poNumber = getElementText(forecast, 'ReferenceInformation DocumentIdentifier');
+                        const lineNumber   = getElementText(forecast, 'LineNumber');
+                        const poNumber     = getElementText(forecast, 'ReferenceInformation DocumentIdentifier');
                         const fromDateTime = getElementText(forecast, 'FromDateTime');
                         const deliveryDate = formatDate(fromDateTime);
-                        const quantityStr = getElementText(forecast, 'MeasurementValue', '0');
-                        const quantity = parseInt(quantityStr, 10);
-                        const uom = getElementText(forecast, 'UnitOfMeasureCode');
+                        const quantityRaw  = parseInt(getElementText(forecast, 'MeasurementValue', '0'), 10);
+                        const quantity     = isNaN(quantityRaw) ? 0 : quantityRaw;
+                        const uom          = getElementText(forecast, 'UnitOfMeasureCode');
 
-                        if (lineNumber && deliveryDate !== null) {
+                        if (deliveryDate !== null) {
                             forecasts.push({
-                                poNumber: poNumber,
-                                lineNumber: lineNumber,
+                                poNumber:      poNumber   || null,
+                                lineNumber:    lineNumber || null,
                                 releaseNumber: null,
-                                deliveryDate: deliveryDate,
-                                quantity: quantity,
-                                uom: uom
+                                deliveryDate:  deliveryDate,
+                                quantity:      quantity,
+                                uom:           uom        || null
                             });
                         }
                     } catch (error) {
@@ -620,31 +896,234 @@
         }
 
         function validateXML(xmlString) {
+            if (!xmlString || typeof xmlString !== 'string' || !xmlString.trim()) {
+                throw new Error('XML input is empty');
+            }
             const parser = new DOMParser();
-            const xmlDoc = parser.parseFromString(xmlString, 'text/xml');
+            const xmlDoc = parser.parseFromString(xmlString.trim(), 'text/xml');
             
             // Check for parser errors
             const parserError = xmlDoc.querySelector('parsererror');
             if (parserError) {
-                throw new Error('Invalid XML format');
+                const msg = parserError.textContent.replace(/\s+/g, ' ').trim();
+                throw new Error(`Invalid XML — ${msg}`);
+            }
+
+            // Guard: root element must exist
+            if (!xmlDoc.documentElement || xmlDoc.documentElement.tagName === 'parsererror') {
+                throw new Error('XML has no root element');
             }
 
             return xmlDoc;
         }
 
+        // ── XML Compare Helpers ──────────────────────────────────────────
+
+        function formatXML(xml) {
+            xml = xml.replace(/<\?xml[^?]*\?>\s*/, ''); // strip XML declaration
+            const PADDING = '    ';
+            let pad = 0;
+            const formatted = xml.replace(/(>)(<)(\/*)(?!\s*$)/g, '$1\n$2$3');
+            return formatted.split('\n').map(node => {
+                node = node.trim();
+                if (!node) return null;
+                let indent = 0;
+                if (node.startsWith('</')) {
+                    pad = Math.max(0, pad - 1);
+                    indent = pad;
+                } else if (
+                    node.startsWith('<') &&
+                    !node.startsWith('<!--') &&
+                    !node.endsWith('/>') &&
+                    !node.includes('</')
+                ) {
+                    indent = pad++;
+                } else {
+                    indent = pad;
+                }
+                return PADDING.repeat(indent) + node;
+            }).filter(l => l !== null && l.trim().length > 0).join('\n');
+        }
+
+        function beautifyXML(xmlString) {
+            if (!xmlString || !xmlString.trim()) {
+                return { text: '', error: null, hasParseError: false };
+            }
+            try {
+                const parser = new DOMParser();
+                const xmlDoc = parser.parseFromString(xmlString.trim(), 'text/xml');
+                const parserError = xmlDoc.querySelector('parsererror');
+                if (parserError) {
+                    return {
+                        text: xmlString.trim(),
+                        error: parserError.textContent.replace(/\s+/g, ' ').trim(),
+                        hasParseError: true
+                    };
+                }
+                const serialized = new XMLSerializer().serializeToString(xmlDoc);
+                return { text: formatXML(serialized), error: null, hasParseError: false };
+            } catch (e) {
+                return { text: xmlString.trim(), error: e.message, hasParseError: true };
+            }
+        }
+
+        function escapeHtml(str) {
+            if (str == null) return '';
+            return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        }
+
+        function computeDiff(a, b) {
+            // Fall back to positional diff for very large files
+            if (a.length + b.length > 2000) {
+                const len = Math.max(a.length, b.length);
+                const out = [];
+                for (let i = 0; i < len; i++) {
+                    if (i >= a.length)      out.push({ type: 'insert',  left: null,  right: b[i] });
+                    else if (i >= b.length) out.push({ type: 'delete',  left: a[i],  right: null });
+                    else if (a[i].trim() === b[i].trim()) out.push({ type: 'equal', left: a[i], right: b[i] });
+                    else                   out.push({ type: 'replace', left: a[i],  right: b[i] });
+                }
+                return out;
+            }
+            // LCS diff
+            const m = a.length, n = b.length;
+            const dp = Array.from({ length: m + 1 }, () => new Array(n + 1).fill(0));
+            for (let i = 1; i <= m; i++)
+                for (let j = 1; j <= n; j++)
+                    dp[i][j] = a[i-1].trim() === b[j-1].trim()
+                        ? dp[i-1][j-1] + 1
+                        : Math.max(dp[i-1][j], dp[i][j-1]);
+            const result = [];
+            let i = m, j = n;
+            while (i > 0 || j > 0) {
+                if (i > 0 && j > 0 && a[i-1].trim() === b[j-1].trim()) {
+                    result.push({ type: 'equal',  left: a[i-1], right: b[j-1] }); i--; j--;
+                } else if (j > 0 && (i === 0 || dp[i][j-1] >= dp[i-1][j])) {
+                    result.push({ type: 'insert', left: null,   right: b[j-1] }); j--;
+                } else {
+                    result.push({ type: 'delete', left: a[i-1], right: null });   i--;
+                }
+            }
+            return result.reverse();
+        }
+
+        function renderLine(lineNum, content, type) {
+            const num  = lineNum != null ? lineNum : '';
+            const text = content  != null ? escapeHtml(content) : '';
+            return `<div class="diff-line diff-${type}"><span class="diff-line-num">${num}</span><span class="diff-line-content">${text}</span></div>`;
+        }
+
+        function setupSyncScroll() {
+            const L = document.getElementById('compareLeft');
+            const R = document.getElementById('compareRight');
+            // Clear any previously attached handlers to prevent stacking on re-opens
+            L.onscroll = null;
+            R.onscroll = null;
+            let busy = false;
+            L.onscroll = () => { if (!busy) { busy = true; R.scrollTop = L.scrollTop; busy = false; } };
+            R.onscroll = () => { if (!busy) { busy = true; L.scrollTop = R.scrollTop; busy = false; } };
+        }
+
+        function showComparison(errorMsg, errorType) {
+            const leftXml  = cmYesterday.getValue().trim();
+            const rightXml = cmToday.getValue().trim();
+
+            const compareSection = document.getElementById('compareSection');
+            const errorBanner    = document.getElementById('errorBanner');
+            const compareLeft    = document.getElementById('compareLeft');
+            const compareRight   = document.getElementById('compareRight');
+            const leftHeader     = document.getElementById('compareLeftHeader');
+            const rightHeader    = document.getElementById('compareRightHeader');
+
+            // Error banner
+            if (errorMsg && errorType && errorType !== 'none') {
+                errorBanner.style.display = 'block';
+                if (errorType === 'mismatch') {
+                    errorBanner.className = 'error-banner mismatch';
+                    errorBanner.innerHTML = `<strong>🟡 Data Mismatch:</strong> ${escapeHtml(errorMsg)}`;
+                } else {
+                    errorBanner.className = 'error-banner xml-error';
+                    errorBanner.innerHTML = `<strong>🔴 XML Error:</strong> ${escapeHtml(errorMsg)}`;
+                }
+            } else {
+                errorBanner.style.display = 'none';
+            }
+
+            // Beautify (handles empty string gracefully)
+            const L = beautifyXML(leftXml);
+            const R = beautifyXML(rightXml);
+            const lLines = L.text ? L.text.split('\n') : [];
+            const rLines = R.text ? R.text.split('\n') : [];
+
+            // Identical check
+            if (lLines.length > 0 && rLines.length > 0 && L.text.trim() === R.text.trim() && !errorMsg) {
+                errorBanner.style.display = 'block';
+                errorBanner.className = 'error-banner mismatch';
+                errorBanner.innerHTML = '<strong>✅ XMLs are identical</strong> — no differences found.';
+            }
+
+            // Diff
+            const diff = computeDiff(lLines, rLines);
+            let lNum = 1, rNum = 1, lHtml = '', rHtml = '';
+            diff.forEach(entry => {
+                if (entry.type === 'equal') {
+                    lHtml += renderLine(lNum++, entry.left,  'equal');
+                    rHtml += renderLine(rNum++, entry.right, 'equal');
+                } else if (entry.type === 'insert') {
+                    lHtml += renderLine(null,   null,        'placeholder');
+                    rHtml += renderLine(rNum++, entry.right, 'added');
+                } else if (entry.type === 'delete') {
+                    lHtml += renderLine(lNum++, entry.left,  'removed');
+                    rHtml += renderLine(null,   null,        'placeholder');
+                } else {
+                    // 'replace' (large-file positional diff) or 'changed' (LCS)
+                    lHtml += renderLine(lNum++, entry.left,  'changed');
+                    rHtml += renderLine(rNum++, entry.right, 'changed');
+                }
+            });
+
+            // Pane headers
+            if (L.hasParseError) {
+                leftHeader.className = 'compare-pane-header pane-error';
+                leftHeader.innerHTML = '📋 Yesterday XML (Existing Orders) <span class="parse-error-badge">⚠ Parse Error</span>';
+            } else {
+                leftHeader.className = 'compare-pane-header';
+                leftHeader.textContent = '📋 Yesterday XML (Existing Orders)';
+            }
+            if (R.hasParseError) {
+                rightHeader.className = 'compare-pane-header pane-error';
+                rightHeader.innerHTML = '📋 Today XML (New Forecasts) <span class="parse-error-badge">⚠ Parse Error</span>';
+            } else {
+                rightHeader.className = 'compare-pane-header';
+                rightHeader.textContent = '📋 Today XML (New Forecasts)';
+            }
+
+            compareLeft.innerHTML  = lHtml;
+            compareRight.innerHTML = rHtml;
+            compareSection.style.display = 'block';
+
+            setTimeout(() => {
+                const first = compareSection.querySelector('.diff-changed, .diff-added, .diff-removed');
+                (first || compareSection).scrollIntoView({ behavior: 'smooth', block: 'center' });
+                setupSyncScroll();
+            }, 80);
+        }
+
+        // ────────────────────────────────────────────────────────────────────
+
         function convertToJSON() {
             try {
                 // Clear previous states
-                xmlYesterdayInput.classList.remove('error', 'success');
-                xmlTodayInput.classList.remove('error', 'success');
-                outputTextarea.value = '';
+                cmYesterday.getWrapperElement().classList.remove('error', 'success');
+                cmToday.getWrapperElement().classList.remove('error', 'success');
+                cmOutput.setValue('');
                 copyBtn.disabled = true;
                 downloadBtn.disabled = true;
                 statsDiv.style.display = 'none';
 
                 // Get input values
-                const xmlYesterdayStr = xmlYesterdayInput.value.trim();
-                const xmlTodayStr = xmlTodayInput.value.trim();
+                const xmlYesterdayStr = cmYesterday.getValue().trim();
+                const xmlTodayStr = cmToday.getValue().trim();
 
                 // Validate inputs
                 if (!xmlYesterdayStr || !xmlTodayStr) {
@@ -660,23 +1139,8 @@
                 const xmlYesterday = validateXML(xmlYesterdayStr);
                 const xmlToday = validateXML(xmlTodayStr);
 
-                // Extract metadata from both
-                const yesterdayMeta = extractMetadata(xmlYesterday);
+                // Metadata comes from Today's XML only
                 const todayMeta = extractMetadata(xmlToday);
-
-                // Validate metadata matches
-                if (yesterdayMeta.buyerId !== todayMeta.buyerId) {
-                    throw new Error(`Buyer ID mismatch: Yesterday (${yesterdayMeta.buyerId}) vs Today (${todayMeta.buyerId})`);
-                }
-                if (yesterdayMeta.sellerId !== todayMeta.sellerId) {
-                    throw new Error(`Seller ID mismatch: Yesterday (${yesterdayMeta.sellerId}) vs Today (${todayMeta.sellerId})`);
-                }
-                if (yesterdayMeta.productId !== todayMeta.productId) {
-                    throw new Error(`Product ID mismatch: Yesterday (${yesterdayMeta.productId}) vs Today (${todayMeta.productId})`);
-                }
-                if (yesterdayMeta.shipToId !== todayMeta.shipToId) {
-                    throw new Error(`Ship-To ID mismatch: Yesterday (${yesterdayMeta.shipToId}) vs Today (${todayMeta.shipToId})`);
-                }
 
                 // Extract forecasts
                 const existingOrders = extractForecasts(xmlYesterday);
@@ -699,9 +1163,16 @@
                     existingOrders: existingOrders
                 };
 
-                // Display result
-                const jsonOutput = JSON.stringify(result, null, 2);
-                outputTextarea.value = jsonOutput;
+                // Display result — guard against circular/non-serialisable objects (shouldn't happen but safety net)
+                let jsonOutput;
+                try {
+                    jsonOutput = JSON.stringify(result, null, 2);
+                } catch (serErr) {
+                    throw new Error(`Failed to serialise result to JSON: ${serErr.message}`);
+                }
+                cmOutput.setValue(jsonOutput);
+                // Ensure CM renders correctly (can be stale if section was hidden)
+                setTimeout(() => cmOutput.refresh(), 50);
 
                 // Update stats
                 existingCountEl.textContent = existingOrders.length;
@@ -709,17 +1180,23 @@
                 statsDiv.style.display = 'flex';
 
                 // Update UI
-                xmlYesterdayInput.classList.add('success');
-                xmlTodayInput.classList.add('success');
+                cmYesterday.getWrapperElement().classList.add('success');
+                cmToday.getWrapperElement().classList.add('success');
                 copyBtn.disabled = false;
                 downloadBtn.disabled = false;
+                sendApiBtn.disabled = false;
 
                 showMessage(`✅ Conversion successful! Found ${existingOrders.length} existing orders and ${forecasts.length} new forecasts.`, 'success');
 
             } catch (error) {
-                xmlYesterdayInput.classList.add('error');
-                xmlTodayInput.classList.add('error');
+                cmYesterday.getWrapperElement().classList.add('error');
+                cmToday.getWrapperElement().classList.add('error');
                 showMessage(`❌ Error: ${error.message}`, 'error');
+                // Auto-open comparison panel (skip if both inputs are empty)
+                const hasInput = cmYesterday.getValue().trim() || cmToday.getValue().trim();
+                if (hasInput && !/provide both/i.test(error.message)) {
+                    showComparison(error.message, 'xml-error');
+                }
             } finally {
                 spinner.classList.remove('show');
                 convertText.textContent = '🚀 Convert to JSON';
@@ -728,55 +1205,152 @@
         }
 
         function clearAll() {
-            xmlYesterdayInput.value = '';
-            xmlTodayInput.value = '';
-            outputTextarea.value = '';
-            xmlYesterdayInput.classList.remove('error', 'success');
-            xmlTodayInput.classList.remove('error', 'success');
+            cmYesterday.setValue('');
+            cmToday.setValue('');
+            cmOutput.setValue('');
+            cmApiResponse.setValue('');
+            cmYesterday.getWrapperElement().classList.remove('error', 'success');
+            cmToday.getWrapperElement().classList.remove('error', 'success');
             fileYesterdayInput.value = '';
             fileTodayInput.value = '';
             fileNameYesterday.textContent = '';
             fileNameToday.textContent = '';
             copyBtn.disabled = true;
             downloadBtn.disabled = true;
+            sendApiBtn.disabled = true;
             statsDiv.style.display = 'none';
+            apiResponseSection.style.display = 'none';
+            document.getElementById('compareSection').style.display = 'none';
             messageDiv.classList.remove('show');
         }
 
-        function handleFileUpload(file, textarea, fileNameDisplay) {
+        async function sendToAPI() {
+            const jsonContent = cmOutput.getValue().trim();
+            if (!jsonContent) {
+                showMessage('❌ No JSON to send. Convert XML first.', 'error');
+                return;
+            }
+            // Validate it is still valid JSON before sending
+            try { JSON.parse(jsonContent); } catch(e) {
+                showMessage('❌ Output is not valid JSON. Re-run conversion first.', 'error');
+                return;
+            }
+
+            try {
+                // Show loading state
+                apiSpinner.classList.add('show');
+                apiText.textContent = 'Sending...';
+                sendApiBtn.disabled = true;
+                cmApiResponse.getWrapperElement().classList.remove('error');
+
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: jsonContent
+                });
+
+                const contentType = response.headers.get('content-type') || '';
+                let displayText;
+                if (contentType.includes('application/json')) {
+                    const data = await response.json();
+                    displayText = JSON.stringify(data, null, 2);
+                } else {
+                    displayText = await response.text() || '(empty response)';
+                }
+
+                // Show response section
+                apiResponseSection.style.display = 'block';
+                cmApiResponse.setValue(`// HTTP ${response.status} ${response.statusText}\n${displayText}`);
+                setTimeout(() => cmApiResponse.refresh(), 50);
+
+                if (response.ok) {
+                    showMessage(`✅ API Response: ${response.status} ${response.statusText}`, 'success');
+                } else {
+                    cmApiResponse.getWrapperElement().classList.add('error');
+                    showMessage(`⚠️ API Error: ${response.status} ${response.statusText}`, 'error');
+                }
+
+            } catch (error) {
+                apiResponseSection.style.display = 'block';
+                let errMsg = error.message;
+                let hint = '';
+                if (/failed to fetch|networkerror|load failed/i.test(errMsg)) {
+                    if (window.location.protocol === 'file:') {
+                        hint = '\n\nYou are on file:// — open via http://localhost:5500/index.html to fix CORS.';
+                    } else {
+                        hint = '\n\nThis is likely a CORS error. Check the browser console (F12) for details.';
+                    }
+                }
+                cmApiResponse.setValue(`// Request Failed\nError: ${errMsg}${hint}`);
+                setTimeout(() => cmApiResponse.refresh(), 50);
+                cmApiResponse.getWrapperElement().classList.add('error');
+                showMessage(`❌ Request failed: ${errMsg}`, 'error');
+            } finally {
+                apiSpinner.classList.remove('show');
+                apiText.textContent = '🚀 Send to API';
+                sendApiBtn.disabled = false;
+            }
+        }
+
+        function handleFileUpload(file, cmEditor, fileNameDisplay) {
             if (!file) return;
 
             // Validate file type
             if (!file.name.toLowerCase().endsWith('.xml')) {
-                showMessage('❌ Please upload a valid XML file', 'error');
+                showMessage('❌ Please upload a valid XML file (.xml)', 'error');
                 return;
             }
 
-            // Show file name
-            fileNameDisplay.textContent = `✓ ${file.name}`;
+            // Guard: reject obviously huge files (>5MB) before reading
+            if (file.size > 5 * 1024 * 1024) {
+                showMessage('❌ File is too large (max 5MB)', 'error');
+                return;
+            }
 
-            // Read file content
+            const sizeKb = (file.size / 1024).toFixed(1);
+            fileNameDisplay.textContent = `✓ ${file.name} (${sizeKb} KB)`;
+
             const reader = new FileReader();
             reader.onload = (e) => {
-                textarea.value = e.target.result;
-                textarea.classList.remove('error', 'success');
-                showMessage(`✓ File "${file.name}" loaded successfully`, 'success');
+                const content = e.target.result;
+                if (!content || !content.trim()) {
+                    showMessage(`❌ File "${file.name}" is empty`, 'error');
+                    fileNameDisplay.textContent = '';
+                    return;
+                }
+                cmEditor.setValue(content);
+                cmEditor.getWrapperElement().classList.remove('error', 'success');
+                showMessage(`✓ File "${file.name}" loaded (${sizeKb} KB)`, 'success');
             };
             reader.onerror = () => {
-                showMessage('❌ Error reading file', 'error');
+                showMessage('❌ Error reading file — try again', 'error');
                 fileNameDisplay.textContent = '';
             };
             reader.readAsText(file);
         }
 
-        function copyToClipboard() {
-            outputTextarea.select();
-            document.execCommand('copy');
-            showMessage('📋 JSON copied to clipboard!', 'success');
+        async function copyToClipboard() {
+            const text = cmOutput.getValue();
+            try {
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    await navigator.clipboard.writeText(text);
+                } else {
+                    // Fallback for http (non-secure) contexts
+                    const tmp = document.createElement('textarea');
+                    tmp.value = text;
+                    document.body.appendChild(tmp);
+                    tmp.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(tmp);
+                }
+                showMessage('📋 JSON copied to clipboard!', 'success');
+            } catch (e) {
+                showMessage('❌ Copy failed — please select and copy manually', 'error');
+            }
         }
 
         function downloadJSON() {
-            const jsonContent = outputTextarea.value;
+            const jsonContent = cmOutput.getValue();
             const blob = new Blob([jsonContent], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -793,16 +1367,27 @@
         convertBtn.addEventListener('click', convertToJSON);
         clearBtn.addEventListener('click', clearAll);
         copyBtn.addEventListener('click', copyToClipboard);
+        document.getElementById('compareBtn').addEventListener('click', () => {
+            if (!cmYesterday.getValue().trim() && !cmToday.getValue().trim()) {
+                showMessage('❌ Please provide at least one XML input to compare', 'error');
+                return;
+            }
+            showComparison(null, 'none');
+        });
+        document.getElementById('closeCompareBtn').addEventListener('click', () => {
+            document.getElementById('compareSection').style.display = 'none';
+        });
         downloadBtn.addEventListener('click', downloadJSON);
+        sendApiBtn.addEventListener('click', sendToAPI);
         // File upload listeners
         fileYesterdayInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
-            handleFileUpload(file, xmlYesterdayInput, fileNameYesterday);
+            handleFileUpload(file, cmYesterday, fileNameYesterday);
         });
 
         fileTodayInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
-            handleFileUpload(file, xmlTodayInput, fileNameToday);
+            handleFileUpload(file, cmToday, fileNameToday);
         });
 
         // Keyboard shortcuts
