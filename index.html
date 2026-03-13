@@ -245,7 +245,18 @@
         .api-response-section .CodeMirror  { height: 250px; border-color: #00bfff; }
         .api-response-section .CodeMirror.error { border-color: #ff4444 !important; }
 
-        .origin-warning {
+        .proxy-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 8px;
+            font-size: 0.85rem;
+            color: #aaa;
+        }
+        .proxy-row input[type=checkbox] { accent-color: #00bfff; cursor: pointer; width: 15px; height: 15px; }
+        .proxy-row label { cursor: pointer; user-select: none; }
+        .proxy-row a { color: #00bfff; text-decoration: none; }
+        .proxy-row a:hover { text-decoration: underline; }
             background: #2d1a00;
             color: #ffaa00;
             border: 2px solid #ffaa00;
@@ -660,6 +671,10 @@
                         <span id="apiText">🚀 Send to API</span>
                     </button>
                 </div>
+                <div class="proxy-row">
+                    <input type="checkbox" id="proxyToggle" />
+                    <label for="proxyToggle">🔀 Route via <a href="https://corsproxy.io" target="_blank" rel="noopener">corsproxy.io</a> (needed on GitHub Pages / file://)</label>
+                </div>
 
                 <div class="api-response-section" id="apiResponseSection" style="display: none; margin-top: 20px;">
                     <label>API Response</label>
@@ -708,6 +723,12 @@
         // Detect file:// origin and warn — API calls will be CORS-blocked
         if (window.location.protocol === 'file:') {
             document.getElementById('originWarning').style.display = 'block';
+        }
+
+        // Auto-enable CORS proxy on GitHub Pages or file://
+        const proxyToggle = document.getElementById('proxyToggle');
+        if (window.location.hostname.endsWith('github.io') || window.location.protocol === 'file:') {
+            proxyToggle.checked = true;
         }
 
         // Utility Functions
@@ -805,6 +826,9 @@
 
                 forecastElements.forEach(forecast => {
                     try {
+                        // LineNumber: prefer value inside <Forecast>, fall back to parent <ForecastLineItem> level
+                        const forecastLineNumber = getElementText(forecast, 'LineNumber') || lineNumber;
+
                         // Try RNet format first, then DemandForecast format for PO number
                         let poNumber = getElementText(forecast, 'ReferenceInformation DocumentIdentifier');
                         if (!poNumber) {
@@ -816,6 +840,11 @@
                         if (!poNumber) {
                             console.warn('Forecast entry has no PO number — will be included with null poNumber', forecast);
                         }
+
+                        // Release number from ReferenceNumber[ReferenceNumberType="ReleaseNumber"]
+                        const refNumbers = Array.from(forecast.querySelectorAll('ReferenceNumber'));
+                        const releaseRef = refNumbers.find(r => r.getAttribute('ReferenceNumberType') === 'ReleaseNumber');
+                        const releaseNumber = releaseRef ? releaseRef.textContent.trim() || null : null;
 
                         // Try direct FromDateTime first, then PlanWindow > DateTimeRange > FromDateTime
                         let fromDateTime = getElementText(forecast, 'FromDateTime');
@@ -849,9 +878,9 @@
 
                         if (deliveryDate !== null) {
                             forecasts.push({
-                                poNumber:      poNumber   || null,
-                                lineNumber:    lineNumber || null,
-                                releaseNumber: null,
+                                poNumber:      poNumber          || null,
+                                lineNumber:    forecastLineNumber || null,
+                                releaseNumber: releaseNumber      || null,
                                 deliveryDate:  deliveryDate,
                                 quantity:      isNaN(quantity) ? 0 : quantity,
                                 uom:           uom        || null
@@ -870,6 +899,9 @@
                     try {
                         const lineNumber   = getElementText(forecast, 'LineNumber');
                         const poNumber     = getElementText(forecast, 'ReferenceInformation DocumentIdentifier');
+                        const fallbackRefs = Array.from(forecast.querySelectorAll('ReferenceNumber'));
+                        const fallbackReleaseRef = fallbackRefs.find(r => r.getAttribute('ReferenceNumberType') === 'ReleaseNumber');
+                        const releaseNumber = fallbackReleaseRef ? fallbackReleaseRef.textContent.trim() || null : null;
                         const fromDateTime = getElementText(forecast, 'FromDateTime');
                         const deliveryDate = formatDate(fromDateTime);
                         const quantityRaw  = parseInt(getElementText(forecast, 'MeasurementValue', '0'), 10);
@@ -878,9 +910,9 @@
 
                         if (deliveryDate !== null) {
                             forecasts.push({
-                                poNumber:      poNumber   || null,
-                                lineNumber:    lineNumber || null,
-                                releaseNumber: null,
+                                poNumber:      poNumber      || null,
+                                lineNumber:    lineNumber    || null,
+                                releaseNumber: releaseNumber || null,
                                 deliveryDate:  deliveryDate,
                                 quantity:      quantity,
                                 uom:           uom        || null
@@ -1243,7 +1275,12 @@
                 sendApiBtn.disabled = true;
                 cmApiResponse.getWrapperElement().classList.remove('error');
 
-                const response = await fetch(API_URL, {
+                const useProxy = document.getElementById('proxyToggle').checked;
+                const effectiveUrl = useProxy
+                    ? `https://corsproxy.io/?url=${encodeURIComponent(API_URL)}`
+                    : API_URL;
+
+                const response = await fetch(effectiveUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: jsonContent
