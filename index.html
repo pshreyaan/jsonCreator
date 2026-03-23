@@ -650,7 +650,7 @@
                 <label for="output">
                     Output JSON
                 </label>
-                <textarea id="output" readonly placeholder="Converted JSON will appear here..."></textarea>
+                <textarea id="output" placeholder="Converted JSON will appear here..."></textarea>
                 <div class="button-group" style="margin-top: 15px;">
                     <button class="btn-success" id="copyBtn" disabled>📋 Copy to Clipboard</button>
                     <button class="btn-info" id="downloadBtn" disabled>💾 Download JSON</button>
@@ -809,10 +809,16 @@
                         // Try RNet format first, then DemandForecast format for PO number
                         let poNumber = getElementText(forecast, 'ReferenceInformation DocumentIdentifier');
                         if (!poNumber) {
-                            // DemandForecast format: get PurchaseOrderNumber from ReferenceNumber
+                            // DemandForecast format: get PurchaseOrderNumber from ReferenceNumber inside <Forecast>
                             const refNumbers = Array.from(forecast.querySelectorAll('ReferenceNumber'));
                             const poRef = refNumbers.find(r => r.getAttribute('ReferenceNumberType') === 'PurchaseOrderNumber');
                             if (poRef) poNumber = poRef.textContent.trim() || null;
+                        }
+                        if (!poNumber) {
+                            // Fallback: PurchaseOrderNumber may be at the parent <ForecastLineItem> level
+                            const lineItemRefs = Array.from(lineItem.querySelectorAll('ReferenceNumber'));
+                            const lineItemPoRef = lineItemRefs.find(r => r.getAttribute('ReferenceNumberType') === 'PurchaseOrderNumber');
+                            if (lineItemPoRef) poNumber = lineItemPoRef.textContent.trim() || null;
                         }
                         if (!poNumber) {
                             console.warn('Forecast entry has no PO number — will be included with null poNumber', forecast);
