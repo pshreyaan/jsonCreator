@@ -654,7 +654,7 @@
                 <div class="button-group" style="margin-top: 15px;">
                     <button class="btn-success" id="copyBtn" disabled>📋 Copy to Clipboard</button>
                     <button class="btn-info" id="downloadBtn" disabled>💾 Download JSON</button>
-                    <button class="btn-api" id="sendApiBtn" disabled>
+                    <button class="btn-api" id="sendApiBtn">
                         <span class="spinner" id="apiSpinner"></span>
                         <span id="apiText">🚀 Send to API</span>
                     </button>
@@ -1232,7 +1232,6 @@
             fileNameToday.textContent = '';
             copyBtn.disabled = true;
             downloadBtn.disabled = true;
-            sendApiBtn.disabled = true;
             statsDiv.style.display = 'none';
             apiResponseSection.style.display = 'none';
             document.getElementById('compareSection').style.display = 'none';
