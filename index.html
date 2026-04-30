@@ -14,7 +14,8 @@
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             min-height: 100vh;
-            padding: 20px;
+            background: linear-gradient(135deg, #0d0d0d 0%, #1a1a1a 100%);
+            color: #1a1a1a;
         }
 
         .container {
@@ -30,7 +31,7 @@
         header {
             background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
             color: #ffd700;
-            padding: 30px;
+            padding: 20px;
             text-align: center;
             border-bottom: 3px solid #ffd700;
         }
@@ -50,7 +51,7 @@
         }
         .main-input-section {
             display: flex;
-
+            gap: 20px;
         }
 
         .input-section {
@@ -228,11 +229,14 @@
         /* ── CodeMirror overrides ── */
         .CodeMirror {
             height: 250px;
+            min-height: 120px;
             border: 2px solid #e0e0e0;
             border-radius: 8px;
             font-family: 'Courier New', monospace;
             font-size: 0.9rem;
             transition: border-color 0.3s;
+            resize: vertical;
+            overflow: auto !important;
         }
         .CodeMirror-scroll { box-sizing: border-box; }
         .CodeMirror-focused {
@@ -245,6 +249,7 @@
         .api-response-section .CodeMirror  { height: 250px; border-color: #00bfff; }
         .api-response-section .CodeMirror.error { border-color: #ff4444 !important; }
 
+        .origin-warning {
             background: #2d1a00;
             color: #ffaa00;
             border: 2px solid #ffaa00;
@@ -557,16 +562,10 @@
     <div class="container">
         <header>
             <h1>🔄 XML to JSON Converter</h1>
-            <p>Convert RNetDemandForecast XML files to JSON format for forecast matching</p>
         </header>
 
         <div class="content">
             <div class="message" id="message"></div>
-            <div class="origin-warning" id="originWarning">
-                ⚠️ <strong>File opened via file://</strong> — the browser will block API calls due to CORS.<br>
-                Open via your local server instead: <code>http://localhost:5500/index.html</code>
-            </div>
-
             <div class="stats" id="stats" style="display: none;">
                 <div class="stat-card">
                     <h3 id="existingCount">0</h3>
@@ -580,7 +579,7 @@
             <div class =  "main-input-section">
                             <div class="input-section">
                 <label for="xmlYesterday">
-                    Input 1: Yesterday XML
+                    Input 1: Existing XML Processed
                     <span class="subtitle">(Existing Orders)</span>
                 </label>
                 <div class="input-controls">
@@ -597,7 +596,7 @@
 
             <div class="input-section">
                 <label for="xmlToday">
-                    Input 2: Today XML
+                    Input 2: New XML to Process
                     <span class="subtitle">(New Forecasts)</span>
                 </label>
                 <div class="input-controls">
@@ -702,6 +701,13 @@
         const cmToday       = CodeMirror.fromTextArea(xmlTodayInput,       CM_XML_OPTS);
         const cmOutput      = CodeMirror.fromTextArea(outputTextarea,      CM_JSON_OPTS);
         const cmApiResponse = CodeMirror.fromTextArea(apiResponseTextarea, CM_JSON_OPTS);
+
+        // Make each editor user-resizable via the CSS resize handle, and refresh CM on drag
+        [cmYesterday, cmToday, cmOutput, cmApiResponse].forEach(cm => {
+            const wrap = cm.getWrapperElement();
+            const ro = new ResizeObserver(() => cm.refresh());
+            ro.observe(wrap);
+        });
 
         // Detect file:// origin and warn — API calls will be CORS-blocked
         if (window.location.protocol === 'file:') {
